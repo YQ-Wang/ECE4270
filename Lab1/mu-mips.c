@@ -320,18 +320,93 @@ void handle_instruction()
 		
 		switch(Op_Code_Special){
 			case 0x00000020: case 0x00000021: //ADD, ADDU
-				rs = instruction & 0x03E00000;
-				rs = rs >> 21;
-				rt = instruction & 0x001F0000;
-				rt = rt >> 16;
-				rd = instruction & 0x0000F800;
-				rd = rd >> 11;
-				NEXT_STATE.REGS[rd] = CURRENT_STATE.REGS[rs] + CURRENT_STATE.REGS[rt];
-				NEXT_STATE.REGS[2] = 0x0A;
-				printf("ADD, %x\n",NEXT_STATE.REGS[rd]);
-				
+			rs = instruction & 0x03E00000;
+			rs = rs >> 21;
+			rt = instruction & 0x001F0000;
+			rt = rt >> 16;
+			rd = instruction & 0x0000F800;
+			rd = rd >> 11;
+			NEXT_STATE.REGS[rd] = CURRENT_STATE.REGS[rs] + CURRENT_STATE.REGS[rt];
+			NEXT_STATE.REGS[2] = 0x0A;
+			printf("ADD, %x\n",NEXT_STATE.REGS[rd]);
 			break;
 
+			case 0x00000022: case 0x00000023: //SUB, SUBU
+			rs = instruction & 0x03E00000;
+			rs = rs >> 21;
+			rt = instruction & 0x001F0000;
+			rt = rt >> 16;
+			rd = instruction & 0x0000F800;
+			rd = rd >> 11;
+			NEXT_STATE.REGS[rd] = CURRENT_STATE.REGS[rs] - CURRENT_STATE.REGS[rt];
+			NEXT_STATE.REGS[2] = 0x0A;
+			printf("SUB, %x\n",NEXT_STATE.REGS[rd]);
+			break;
+
+			case 0x00000018: case 0x00000019: //MULT, MULTU
+			rs = instruction & 0x03E00000;
+			rs = rs >> 21;
+			rt = instruction & 0x001F0000;
+			rt = rt >> 16;
+
+			//need to do something here
+
+			break;
+
+			case 0x00000024: //AND
+			rs = instruction & 0x03E00000;
+			rs = rs >> 21;
+			rt = instruction & 0x001F0000;
+			rt = rt >> 16;
+			rd = instruction & 0x0000F800;
+			rd = rd >> 11;
+			NEXT_STATE.REGS[rd] = CURRENT_STATE.REGS[rs] & CURRENT_STATE.REGS[rt];
+			NEXT_STATE.REGS[2] = 0x0A;
+			printf("AND, %x\n",NEXT_STATE.REGS[rd]);
+			break;
+
+			case 0x00000025: //OR
+			rs = instruction & 0x03E00000;
+			rs = rs >> 21;
+			rt = instruction & 0x001F0000;
+			rt = rt >> 16;
+			rd = instruction & 0x0000F800;
+			rd = rd >> 11;
+			NEXT_STATE.REGS[rd] = CURRENT_STATE.REGS[rs] | CURRENT_STATE.REGS[rt];
+			NEXT_STATE.REGS[2] = 0x0A;
+			printf("OR, %x\n",NEXT_STATE.REGS[rd]);
+			break;
+
+			case 0x00000026: //XOR
+			rs = instruction & 0x03E00000;
+			rs = rs >> 21;
+			rt = instruction & 0x001F0000;
+			rt = rt >> 16;
+			rd = instruction & 0x0000F800;
+			rd = rd >> 11;
+			NEXT_STATE.REGS[rd] = CURRENT_STATE.REGS[rs] ^ CURRENT_STATE.REGS[rt];
+			NEXT_STATE.REGS[2] = 0x0A;
+			printf("XOR, %x\n",NEXT_STATE.REGS[rd]);
+			break;
+
+			case 0x00000027: //NOR
+			rs = instruction & 0x03E00000;
+			rs = rs >> 21;
+			rt = instruction & 0x001F0000;
+			rt = rt >> 16;
+			rd = instruction & 0x0000F800;
+			rd = rd >> 11;
+			NEXT_STATE.REGS[rd] = ~ (CURRENT_STATE.REGS[rs] ^ CURRENT_STATE.REGS[rt]);
+			NEXT_STATE.REGS[2] = 0x0A;
+			printf("XOR, %x\n",NEXT_STATE.REGS[rd]);
+			break;
+
+			case 0x0000000C:  //SYSTEMCALL
+			if(CURRENT_STATE.REGS[2] == 0x0A)
+			{
+				RUN_FLAG = FALSE;
+			}
+			break;
 		}
 	}
 	else{
@@ -370,6 +445,8 @@ void handle_instruction()
 			printf("SW, %x\n",CURRENT_STATE.REGS[rt]);
 			NEXT_STATE.REGS[2] = 0x0A;
 			break;
+
+
 		}
 
 	}
