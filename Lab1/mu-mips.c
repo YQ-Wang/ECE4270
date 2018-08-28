@@ -314,12 +314,12 @@ void handle_instruction()
 	uint32_t rt;
 	uint32_t rd;
 	uint32_t immediate;
-	
+	printf("Instruction: %x\n\n",instruction);
 	if((instruction | 0x03ffffff) == 0x03ffffff){
 		Op_Code_Special = instruction & 0x0000003f;
 		
 		switch(Op_Code_Special){
-			case 0x00000020: //ADD
+			case 0x00000020: case 0x00000021: //ADD, ADDU
 				rs = instruction & 0x03E00000;
 				rs = rs >> 21;
 				rt = instruction & 0x001F0000;
@@ -328,7 +328,7 @@ void handle_instruction()
 				rd = rd >> 11;
 				NEXT_STATE.REGS[rd] = CURRENT_STATE.REGS[rs] + CURRENT_STATE.REGS[rt];
 				NEXT_STATE.REGS[2] = 0x0A;
-				printf("ADD, %u\n",NEXT_STATE.REGS[rd]);
+				printf("ADD, %x\n",NEXT_STATE.REGS[rd]);
 				
 			break;
 
@@ -336,6 +336,7 @@ void handle_instruction()
 	}
 	else{
 		op = instruction & 0xFC000000;
+		printf("%x\n",op);
 		switch(op){
 			case 0x3C000000: //LUI
 			immediate = instruction & 0x0000FFFF;
@@ -344,7 +345,7 @@ void handle_instruction()
 			rt = rt >> 16;
 			NEXT_STATE.REGS[rt] = immediate;
 			NEXT_STATE.REGS[2] = 0x0A;
-			printf("LUI, %u\n",NEXT_STATE.REGS[rt]);
+			printf("LUI, %x\n",NEXT_STATE.REGS[rt]);
 			break;
 
 			case 0x24000000: //ADDIU
@@ -354,10 +355,13 @@ void handle_instruction()
 			rs = instruction & 0x03E00000;
 			rs = rs >> 21;
 			NEXT_STATE.REGS[rt] = immediate + CURRENT_STATE.REGS[rs];
+			printf("ADDIU, %x\n",NEXT_STATE.REGS[rt]);
 			NEXT_STATE.REGS[2] = 0x0A;
 			break;
 		}
-	}	
+
+	}
+	NEXT_STATE.PC = CURRENT_STATE.PC + 4;	
 	
 	
 	
