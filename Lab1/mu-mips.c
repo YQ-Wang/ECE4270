@@ -358,6 +358,18 @@ void handle_instruction()
 			printf("ADDIU, %x\n",NEXT_STATE.REGS[rt]);
 			NEXT_STATE.REGS[2] = 0x0A;
 			break;
+
+			case 0xAC000000: //SW
+			base = instruction & 0x03E00000;
+			base = base >> 21;
+			rt = instruction & 0x001F0000;
+			rt = rt >> 16;
+			immediate = instruction & 0x0000FFFF;
+			mem_location = CURRENT_STATE.REGS[base] + immediate;
+			CURRENT_STATE.REGS[rt] = mem_write_32(mem_location, CURRENT_STATE.REGS[rt]);
+			printf("SW, %x\n",CURRENT_STATE.REGS[rt]);
+			NEXT_STATE.REGS[2] = 0x0A;
+			break;
 		}
 
 	}
