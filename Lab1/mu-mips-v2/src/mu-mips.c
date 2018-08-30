@@ -519,6 +519,8 @@ void handle_instruction()
 			printf("JR, %x\n\n",NEXT_STATE.PC);
             break;
 
+
+
             case 0x00000009: //JALR
             rs = instruction & 0x03E00000;
 			rs = rs >> 21;
@@ -552,7 +554,7 @@ void handle_instruction()
             printf("LUI, %x\n\n",NEXT_STATE.REGS[rt]);
             break;
                 
-            case 0x24000000: //ADDIU
+            case 0x24000000: case 0x20000000: //ADDI, ADDIU
             immediate = instruction & 0x0000FFFF;
             rt = instruction & 0x001F0000;
             rt = rt >> 16;
@@ -664,7 +666,16 @@ void handle_instruction()
 			NEXT_STATE.REGS[2] = 0x0A;
             break;
 
-            case 0x0000000C: //JAL
+            case 0x08000000: //J
+            target = instruction & 0x03FFFFFF;
+            target = target << 2;
+            temp = CURRENT_STATE.PC & 0xF0000000;
+            NEXT_STATE.PC = temp + target;
+            NEXT_STATE.REGS[2] = 0x0A;
+			printf("J, %x\n\n",NEXT_STATE.PC);
+            break;
+
+            case 0x0C000000: //JAL
             target = instruction & 0x03FFFFFF;
             target = target << 2;
             NEXT_STATE.REGS[31] = CURRENT_STATE.PC + 8;
@@ -673,6 +684,10 @@ void handle_instruction()
             NEXT_STATE.REGS[2] = 0x0A;
 			printf("JAL, %x\n\n",NEXT_STATE.PC);
             break;
+
+            case 
+
+
         }
         
     }
