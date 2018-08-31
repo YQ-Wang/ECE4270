@@ -746,6 +746,15 @@ void handle_instruction()
 			NEXT_STATE.REGS[2] = 0x0A;
             break;
 
+            case 0x08000000: //J
+            target = instruction & 0x03FFFFFF;
+            target = target << 2;
+            temp = CURRENT_STATE.PC & 0xF0000000;
+            NEXT_STATE.PC = temp + target;
+            NEXT_STATE.REGS[2] = 0x0A;
+			printf("J, %x\n\n",NEXT_STATE.PC);
+            break;
+
             case 0x0C000000: //JAL 
             target = instruction & 0x03FFFFFF;
             target = target << 2;
