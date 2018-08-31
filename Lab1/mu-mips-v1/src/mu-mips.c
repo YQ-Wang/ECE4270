@@ -805,7 +805,6 @@ void print_instruction(uint32_t addr){
     uint32_t instruction = mem_read_32(addr);
     uint32_t Op_Code_Special = 0;
     uint32_t op = 0;
-    printf("Instruction: %x\t", instruction);
     if((instruction | 0x03ffffff) == 0x03ffffff){
         Op_Code_Special = instruction & 0x0000003f;
         
@@ -899,7 +898,7 @@ void print_instruction(uint32_t addr){
             break;
 
 			case 0x0000000C:  //SYSTEMCALL
-			printf("SYTEMCALL");
+			printf("SYTEMCALL\n");
 			break;
                 
         }
