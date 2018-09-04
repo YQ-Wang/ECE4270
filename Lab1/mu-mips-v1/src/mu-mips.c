@@ -332,9 +332,7 @@ void handle_instruction()
             rd = instruction & 0x0000F800;
             rd = rd >> 11;
             NEXT_STATE.REGS[rd] = CURRENT_STATE.REGS[rs] + CURRENT_STATE.REGS[rt];
-            NEXT_STATE.REGS[2] = 0x0A;
             NEXT_STATE.PC = CURRENT_STATE.PC + 4;
-            printf("ADD/ADDU, %x\n\n",NEXT_STATE.REGS[rd]);
             
             break;
 
@@ -346,9 +344,7 @@ void handle_instruction()
 			rd = instruction & 0x0000F800;
 			rd = rd >> 11;
 			NEXT_STATE.REGS[rd] = CURRENT_STATE.REGS[rs] - CURRENT_STATE.REGS[rt];
-			NEXT_STATE.REGS[2] = 0x0A;
             NEXT_STATE.PC = CURRENT_STATE.PC + 4;
-			printf("SUB, %x\n\n",NEXT_STATE.REGS[rd]);
 			break;
 
 			case 0x00000018: case 0x00000019: //MULT, MULTU
@@ -359,9 +355,7 @@ void handle_instruction()
             temp = CURRENT_STATE.REGS[rs] * CURRENT_STATE.REGS[rt];
             NEXT_STATE.HI = temp & 0xFFFF0000;
             NEXT_STATE.LO = temp & 0x0000FFFF;
-            NEXT_STATE.REGS[2] = 0x0A;
             NEXT_STATE.PC = CURRENT_STATE.PC + 4;
-			printf("MULT/MULTU, Hi: %x LO: %x\n\n",NEXT_STATE.HI, NEXT_STATE.LO);
 			break;
 
             case 0x0000001A: case 0x00000001B: //DIV, DIVU
@@ -377,9 +371,7 @@ void handle_instruction()
                 NEXT_STATE.HI = CURRENT_STATE.HI;
                 NEXT_STATE.LO = CURRENT_STATE.LO;
             }
-            NEXT_STATE.REGS[2] = 0x0A;
             NEXT_STATE.PC = CURRENT_STATE.PC + 4;
-			printf("DIV/DIVU, Hi: %x LO: %x\n\n",NEXT_STATE.HI, NEXT_STATE.LO);
             break;
 
 			case 0x00000024: //AND
@@ -390,9 +382,7 @@ void handle_instruction()
 			rd = instruction & 0x0000F800;
 			rd = rd >> 11;
 			NEXT_STATE.REGS[rd] = CURRENT_STATE.REGS[rs] & CURRENT_STATE.REGS[rt];
-			NEXT_STATE.REGS[2] = 0x0A;
             NEXT_STATE.PC = CURRENT_STATE.PC + 4;
-			printf("AND, %x\n\n",NEXT_STATE.REGS[rd]);
 			break;
 
 			case 0x00000025: //OR
@@ -403,9 +393,7 @@ void handle_instruction()
 			rd = instruction & 0x0000F800;
 			rd = rd >> 11;
 			NEXT_STATE.REGS[rd] = CURRENT_STATE.REGS[rs] | CURRENT_STATE.REGS[rt];
-			NEXT_STATE.REGS[2] = 0x0A;
             NEXT_STATE.PC = CURRENT_STATE.PC + 4;
-			printf("OR, %x\n\n",NEXT_STATE.REGS[rd]);
 			break;
 
 			case 0x00000026: //XOR
@@ -416,9 +404,7 @@ void handle_instruction()
 			rd = instruction & 0x0000F800;
 			rd = rd >> 11;
 			NEXT_STATE.REGS[rd] = CURRENT_STATE.REGS[rs] ^ CURRENT_STATE.REGS[rt];
-			NEXT_STATE.REGS[2] = 0x0A;
             NEXT_STATE.PC = CURRENT_STATE.PC + 4;
-			printf("XOR, %x\n",NEXT_STATE.REGS[rd]);
 			break;
 
 			case 0x00000027: //NOR
@@ -429,9 +415,7 @@ void handle_instruction()
 			rd = instruction & 0x0000F800;
 			rd = rd >> 11;
 			NEXT_STATE.REGS[rd] = ~ (CURRENT_STATE.REGS[rs] ^ CURRENT_STATE.REGS[rt]);
-			NEXT_STATE.REGS[2] = 0x0A;
             NEXT_STATE.PC = CURRENT_STATE.PC + 4;
-			printf("XOR, %x\n\n",NEXT_STATE.REGS[rd]);
 			break;
 
             case 0x0000002A: //SLT
@@ -447,9 +431,7 @@ void handle_instruction()
             else{
                 NEXT_STATE.REGS[rd] = 0x00;
             }
-            NEXT_STATE.REGS[2] = 0x0A;
             NEXT_STATE.PC = CURRENT_STATE.PC + 4;
-			printf("SLT, %x\n",NEXT_STATE.REGS[rd]);
             break;
 
             case 0x00000000: //SLL
@@ -460,9 +442,7 @@ void handle_instruction()
             sa = instruction & 0x000007C0;
             sa = sa >> 6;
             NEXT_STATE.REGS[rd] = CURRENT_STATE.REGS[rt] << sa;
-            NEXT_STATE.REGS[2] = 0x0A;
             NEXT_STATE.PC = CURRENT_STATE.PC + 4;
-			printf("SLL, %x\n\n",NEXT_STATE.REGS[rd]);
             break;
 
             case 0x00000002: //SRL
@@ -473,9 +453,7 @@ void handle_instruction()
             sa = instruction & 0x000007C0;
             sa = sa >> 6;
             NEXT_STATE.REGS[rd] = CURRENT_STATE.REGS[rt] >> sa;
-            NEXT_STATE.REGS[2] = 0x0A;
             NEXT_STATE.PC = CURRENT_STATE.PC + 4;
-			printf("SRL, %x\n",NEXT_STATE.REGS[rd]);
             break;
 
             case 0x00000003: //SRA
@@ -485,54 +463,49 @@ void handle_instruction()
 			rd = rd >> 11;
             sa = instruction & 0x000007C0;
             sa = sa >> 6;
-            NEXT_STATE.REGS[rd] = CURRENT_STATE.REGS[rt] >> sa;
-            NEXT_STATE.REGS[2] = 0x0A;
+            if((CURRENT_STATE.REGS[rt] & 0x80000000) == 0x80000000){
+                for(uint32_t i = 0; i<sa; i++){
+                    NEXT_STATE.REGS[rd] = (CURRENT_STATE.REGS[rt] >> 1) | 0x80000000;
+                }
+            }
+            else{
+                NEXT_STATE.REGS[rd] = CURRENT_STATE.REGS[rt] >> sa;
+            }
             NEXT_STATE.PC = CURRENT_STATE.PC + 4;
-			printf("SRA, %x\n\n",NEXT_STATE.REGS[rd]);
             break;
 
             case 0x00000010: //MFHI
             rd = instruction & 0x0000F800;
 			rd = rd >> 11;
             NEXT_STATE.REGS[rd] = CURRENT_STATE.HI;
-            NEXT_STATE.REGS[2] = 0x0A;
             NEXT_STATE.PC = CURRENT_STATE.PC + 4;
-			printf("MFHI, %x\n\n",NEXT_STATE.REGS[rd]);
             break;
 
             case 0x00000012: //MFLO
             rd = instruction & 0x0000F800;
 			rd = rd >> 11;
             NEXT_STATE.REGS[rd] = CURRENT_STATE.LO;
-            NEXT_STATE.REGS[2] = 0x0A;
             NEXT_STATE.PC = CURRENT_STATE.PC + 4;
-			printf("MFLO, %x\n\n",NEXT_STATE.REGS[rd]);
             break;
 
             case 0x00000011: //MTHI
             rs = instruction & 0x03E00000;
 			rs = rs >> 21;
             NEXT_STATE.HI = CURRENT_STATE.REGS[rs];
-            NEXT_STATE.REGS[2] = 0x0A;
             NEXT_STATE.PC = CURRENT_STATE.PC + 4;
-			printf("MTHI, %x\n\n",NEXT_STATE.HI);
             break;
 
             case 0x00000013: //MTLO
             rs = instruction & 0x03E00000;
 			rs = rs >> 21;
             NEXT_STATE.LO = CURRENT_STATE.REGS[rs];
-            NEXT_STATE.REGS[2] = 0x0A;
             NEXT_STATE.PC = CURRENT_STATE.PC + 4;
-			printf("MTLO, %x\n\n",NEXT_STATE.LO);
             break;
 
             case 0x00000008: //JR
             rs = instruction & 0x03E00000;
 			rs = rs >> 21;
             NEXT_STATE.PC = CURRENT_STATE.REGS[rs];
-            NEXT_STATE.REGS[2] = 0x0A;
-			printf("JR, %x\n\n",NEXT_STATE.PC);
             break;
 
             case 0x00000009: //JALR
@@ -542,15 +515,14 @@ void handle_instruction()
 			rd = rd >> 11;
             NEXT_STATE.REGS[rd] = CURRENT_STATE.PC + 8;
             NEXT_STATE.PC = CURRENT_STATE.REGS[rs];
-            NEXT_STATE.REGS[2] = 0x0A;
-			printf("JALR, %x\n\n",NEXT_STATE.PC);
             break;
 
 			case 0x0000000C:  //SYSTEMCALL
-			if(CURRENT_STATE.REGS[2] == 0x0A)
-			{
+            CURRENT_STATE.REGS[2] = 0x0A;
+			// if(CURRENT_STATE.REGS[2] == 0x0A)
+			// {
 				RUN_FLAG = FALSE;
-			}
+			// }
             NEXT_STATE.PC = CURRENT_STATE.PC + 4;
 			break;
                 
@@ -565,9 +537,7 @@ void handle_instruction()
             rt = instruction & 0x001F0000;
             rt = rt >> 16;
             NEXT_STATE.REGS[rt] = immediate;
-            NEXT_STATE.REGS[2] = 0x0A;
             NEXT_STATE.PC = CURRENT_STATE.PC + 4;
-            printf("LUI, %x\n\n",NEXT_STATE.REGS[rt]);
             break;
                 
             case 0x24000000: case 0x20000000: //ADDIU
@@ -583,8 +553,6 @@ void handle_instruction()
             rs = instruction & 0x03E00000;
             rs = rs >> 21;
             NEXT_STATE.REGS[rt] = immediate + CURRENT_STATE.REGS[rs];
-            printf("ADDIU, %x\n\n",NEXT_STATE.REGS[rt]);
-            NEXT_STATE.REGS[2] = 0x0A;
             NEXT_STATE.PC = CURRENT_STATE.PC + 4;
             break;
                 
@@ -603,8 +571,7 @@ void handle_instruction()
             mem_location = CURRENT_STATE.REGS[base] + immediate;
             mem_location = mem_location | 0x00010000;
             NEXT_STATE.REGS[rt] = mem_read_32(mem_location);
-            printf("LW, %x\n\n",NEXT_STATE.REGS[rt]);
-            NEXT_STATE.REGS[2] = 0x0A;
+            
             NEXT_STATE.PC = CURRENT_STATE.PC + 4;
             break;
 
@@ -627,8 +594,7 @@ void handle_instruction()
             if((NEXT_STATE.REGS[rt] & 0x00000080) == 0x00000080){
                 NEXT_STATE.REGS[rt] = NEXT_STATE.REGS[rt] | 0xFFFFFF00;
             }
-            printf("LB, %x\n\n",NEXT_STATE.REGS[rt]);
-            NEXT_STATE.REGS[2] = 0x0A;
+            
             NEXT_STATE.PC = CURRENT_STATE.PC + 4;
             break;
 
@@ -651,8 +617,7 @@ void handle_instruction()
             if((NEXT_STATE.REGS[rt] & 0x00008000) == 0x00008000){
                 NEXT_STATE.REGS[rt] = NEXT_STATE.REGS[rt] | 0xFFFF0000;
             }
-            printf("LH, %x\n\n",NEXT_STATE.REGS[rt]);
-            NEXT_STATE.REGS[2] = 0x0A;
+            
             NEXT_STATE.PC = CURRENT_STATE.PC + 4;
             break;
 
@@ -671,8 +636,7 @@ void handle_instruction()
 			mem_location = CURRENT_STATE.REGS[base] + immediate;
             mem_location = mem_location | 0x00010000;
 			mem_write_32(mem_location, CURRENT_STATE.REGS[rt]);
-			printf("SW, %x\n\n",CURRENT_STATE.REGS[rt]);
-			NEXT_STATE.REGS[2] = 0x0A;
+			
             NEXT_STATE.PC = CURRENT_STATE.PC + 4;
 			break;
 
@@ -683,8 +647,7 @@ void handle_instruction()
             rt = instruction & 0x001F0000;
 			rt = rt >> 16;
             NEXT_STATE.REGS[rt] = immediate & CURRENT_STATE.REGS[rt];
-            printf("ANDI, %x\n\n",CURRENT_STATE.REGS[rt]);
-            NEXT_STATE.REGS[2] = 0x0A;
+            
             NEXT_STATE.PC = CURRENT_STATE.PC + 4;
             break;
 
@@ -695,8 +658,7 @@ void handle_instruction()
             rt = instruction & 0x001F0000;
 			rt = rt >> 16;
             NEXT_STATE.REGS[rt] = immediate | CURRENT_STATE.REGS[rt];
-            printf("ORI, %x\n\n",CURRENT_STATE.REGS[rt]);
-            NEXT_STATE.REGS[2] = 0x0A;
+            
             NEXT_STATE.PC = CURRENT_STATE.PC + 4;
             break;
 
@@ -707,8 +669,7 @@ void handle_instruction()
             rt = instruction & 0x001F0000;
 			rt = rt >> 16;
             NEXT_STATE.REGS[rt] = immediate ^ CURRENT_STATE.REGS[rt];
-            printf("XORI, %x\n\n",CURRENT_STATE.REGS[rt]);
-            NEXT_STATE.REGS[2] = 0x0A;
+            
             NEXT_STATE.PC = CURRENT_STATE.PC + 4;
             break;
 
@@ -730,8 +691,7 @@ void handle_instruction()
             else{
                 NEXT_STATE.REGS[rt] = 0x00;
             }
-            printf("SLTI, %x\n\n",CURRENT_STATE.REGS[rt]);
-            NEXT_STATE.REGS[2] = 0x0A;
+            
             NEXT_STATE.PC = CURRENT_STATE.PC + 4;
             break;
 
@@ -750,8 +710,7 @@ void handle_instruction()
 			mem_location = CURRENT_STATE.REGS[base] + immediate;
             mem_location = mem_location | 0x00010000;
 			mem_write_32(mem_location, (CURRENT_STATE.REGS[rt] & 0x0000FFFF));
-			printf("SH, %x\n\n",CURRENT_STATE.REGS[rt]);
-			NEXT_STATE.REGS[2] = 0x0A;
+			
             NEXT_STATE.PC = CURRENT_STATE.PC + 4;
             break;
 
@@ -770,8 +729,7 @@ void handle_instruction()
 			mem_location = CURRENT_STATE.REGS[base] + immediate;
             mem_location = mem_location | 0x00010000;
 			mem_write_32(mem_location, (CURRENT_STATE.REGS[rt] & 0x000000FF));
-			printf("SB, %x\n\n",CURRENT_STATE.REGS[rt]);
-			NEXT_STATE.REGS[2] = 0x0A;
+			
             NEXT_STATE.PC = CURRENT_STATE.PC + 4;
             break;
 
@@ -780,8 +738,7 @@ void handle_instruction()
             target = target << 2;
             temp = CURRENT_STATE.PC & 0xF0000000;
             NEXT_STATE.PC = temp | target; //changed this to an OR, not sure if right
-            NEXT_STATE.REGS[2] = 0x0A;
-			printf("J, %x\n\n",NEXT_STATE.PC);
+            
             break;
 
             case 0x0C000000: //JAL 
@@ -790,8 +747,7 @@ void handle_instruction()
             NEXT_STATE.REGS[31] = CURRENT_STATE.PC + 8;
             temp = CURRENT_STATE.PC & 0xF0000000; //changed this to an OR, not sure if right
             NEXT_STATE.PC = temp | target;
-            NEXT_STATE.REGS[2] = 0x0A;
-			printf("JAL, %x\n\n",NEXT_STATE.PC);
+            
             break;
 
             case 0x10000000: //BEQ
@@ -810,7 +766,7 @@ void handle_instruction()
             if(CURRENT_STATE.REGS[rt] == CURRENT_STATE.REGS[rs]){
                 NEXT_STATE.PC = CURRENT_STATE.PC + target;
             }
-            printf("BEQ, %x\n\n",NEXT_STATE.PC);
+            
             break;
 
             case 0x14000000: //BNE
@@ -829,7 +785,7 @@ void handle_instruction()
             if(CURRENT_STATE.REGS[rt] != CURRENT_STATE.REGS[rs]){
                 NEXT_STATE.PC = CURRENT_STATE.PC + target;
             }
-            printf("BNE, %x\n\n",NEXT_STATE.PC);
+            
             break;
 
             case 0x18000000: //BLEZ
@@ -846,7 +802,6 @@ void handle_instruction()
             if((CURRENT_STATE.REGS[rs] == 0x00) || ((CURRENT_STATE.REGS[rs] & 0x80000000) == 0x80000000)){
                 NEXT_STATE.PC = CURRENT_STATE.PC + target;
             }
-            printf("BLEZ, %x\n\n",NEXT_STATE.PC);
             break;
 
             case 0x1C000000: //BGTZ
@@ -863,7 +818,6 @@ void handle_instruction()
             if((CURRENT_STATE.REGS[rs] != 0x00) && ((CURRENT_STATE.REGS[rs] & 0x80000000) != 0x80000000)){
                 NEXT_STATE.PC = CURRENT_STATE.PC + target;
             }
-            printf("BGTZ, %x\n\n",NEXT_STATE.PC);
             break;
 
             case 0x04000000: //BLTZ, BGEZ
@@ -933,12 +887,11 @@ void print_instruction(uint32_t addr){
     uint32_t rs = 0;
     uint32_t rt = 0;
     uint32_t rd = 0;
-    // uint32_t sa = 0;
-    // uint32_t immediate = 0;
-    // uint32_t base = 0;
-    // uint32_t mem_location = 0;
-    // uint32_t temp = 0;
-    // uint32_t target = 0;
+    uint32_t sa = 0;
+    uint32_t immediate = 0;
+    uint32_t base = 0;
+    uint32_t mem_location = 0;
+    uint32_t target = 0;
     if((instruction | 0x03ffffff) == 0x03ffffff){
         Op_Code_Special = instruction & 0x0000003f;
         
@@ -1004,7 +957,7 @@ void print_instruction(uint32_t addr){
 			rs = rs >> 21;
 			rt = instruction & 0x001F0000;
 			rt = rt >> 16;
-			printf("DIV: $%u / $%u\n");
+			printf("DIV: $%u / $%u\n", rs, rt);
             break;
 
             case 0x00000001B: //DIVU
@@ -1046,47 +999,89 @@ void print_instruction(uint32_t addr){
 			break;
 
 			case 0x00000027: //NOR
-			printf("XOR\n");
+			rs = instruction & 0x03E00000;
+			rs = rs >> 21;
+			rt = instruction & 0x001F0000;
+			rt = rt >> 16;
+			rd = instruction & 0x0000F800;
+			rd = rd >> 11;
+			printf("NOR: $%u = ~($%u ^ $%u)\n", rd, rs, rt);
 			break;
 
             case 0x0000002A: //SLT
-			printf("SLT\n");
+			rs = instruction & 0x03E00000;
+			rs = rs >> 21;
+			rt = instruction & 0x001F0000;
+			rt = rt >> 16;
+			rd = instruction & 0x0000F800;
+			rd = rd >> 11;
+            printf("SLT: if($%u < $%u) $%u = 0x01 if($%u >= $%u) $%u = 0x00\n", rs, rt, rd, rs, rt, rd);
             break;
 
             case 0x00000000: //SLL
-			printf("SLL\n");
+            rt = instruction & 0x001F0000;
+			rt = rt >> 16;
+			rd = instruction & 0x0000F800;
+			rd = rd >> 11;
+            sa = instruction & 0x000007C0;
+            sa = sa >> 6;
+			printf("SLL: $%u = $%u << %u\n", rd, rt, sa);
             break;
 
             case 0x00000002: //SRL
-			printf("SRL\n");
+            rt = instruction & 0x001F0000;
+			rt = rt >> 16;
+			rd = instruction & 0x0000F800;
+			rd = rd >> 11;
+            sa = instruction & 0x000007C0;
+            sa = sa >> 6;
+			printf("SRL: $%u = $%u >> %u\n", rd, rt, sa);
             break;
 
             case 0x00000003: //SRA
-			printf("SRA\n");
+			rt = instruction & 0x001F0000;
+			rt = rt >> 16;
+			rd = instruction & 0x0000F800;
+			rd = rd >> 11;
+            sa = instruction & 0x000007C0;
+            sa = sa >> 6;
+			printf("SRA: $%u = $%u >> %u\n", rd, rt, sa);
             break;
 
             case 0x00000010: //MFHI
-			printf("MFHI\n");
+            rd = instruction & 0x0000F800;
+			rd = rd >> 11;
+			printf("MFHI: $%u = CURRENT_STATE.HI\n",rd);
             break;
 
             case 0x00000012: //MFLO
-			printf("MFLO\n");
+			rd = instruction & 0x0000F800;
+			rd = rd >> 11;
+			printf("MFHI: $%u = CURRENT_STATE.HI\n",rd);
             break;
 
             case 0x00000011: //MTHI
-			printf("MTHI\n");
+            rs = instruction & 0x03E00000;
+			rs = rs >> 21;
+			printf("MTHI: NEXT_STATE.HI = $%u\n", rs);
             break;
 
             case 0x00000013: //MTLO
-			printf("MTLO\n");
+			rs = instruction & 0x03E00000;
+			rs = rs >> 21;
+			printf("MTLO: NEXT_STATE.LO = $%u\n", rs);
             break;
 
             case 0x00000008: //JR
-			printf("JR\n");
+            rs = instruction & 0x03E00000;
+			rs = rs >> 21;
+			printf("JR: NEXT_STATE.PC = $%u\n", rs);
             break;
 
             case 0x00000009: //JALR
-			printf("JALR\n");
+            rs = instruction & 0x03E00000;
+			rs = rs >> 21;
+			printf("JALR: NEXT_STATE.PC = $%u\n", rs);
             break;
 
 			case 0x0000000C:  //SYSTEMCALL
@@ -1099,89 +1094,277 @@ void print_instruction(uint32_t addr){
         op = instruction & 0xFC000000;
         switch(op){
             case 0x3C000000: //LUI
-            printf("LUI\n");
+            immediate = instruction & 0x0000FFFF;
+            immediate = immediate << 16;
+            rt = instruction & 0x001F0000;
+            rt = rt >> 16;
+            printf("LUI: $%u = %u\n", rt, immediate);
             break;
                 
             case 0x24000000: //ADDIU
-            printf("ADDIU\n");
+            immediate = instruction & 0x0000FFFF;
+            if((immediate & 0x00008000) == 0x00008000){
+                immediate = immediate | 0xFFFF0000;
+            }
+            else{
+                immediate = immediate & 0x0000FFFF;
+            }
+            rt = instruction & 0x001F0000;
+            rt = rt >> 16;
+            rs = instruction & 0x03E00000;
+            rs = rs >> 21;
+            printf("ADDIU: $%u = $%u + %u\n", rt, rs, immediate);
             break;
 
             case 0x20000000: //ADDI
-            printf("ADDI\n");
+            immediate = instruction & 0x0000FFFF;
+            if((immediate & 0x00008000) == 0x00008000){
+                immediate = immediate | 0xFFFF0000;
+            }
+            else{
+                immediate = immediate & 0x0000FFFF;
+            }
+            rt = instruction & 0x001F0000;
+            rt = rt >> 16;
+            rs = instruction & 0x03E00000;
+            rs = rs >> 21;
+            printf("ADDI: $%u = $%u + %u\n", rt, rs, immediate);
             break;
                 
             case 0x8C000000: //LW
-            printf("LW\n");
-            break;
-
-            case 0xAC000000: //SW
-			printf("SW\n");
-			break;
-
-            case 0x30000000: //ANDI
-            printf("ANDI\n");
-            break;
-
-            case 0x34000000: //ORI
-            printf("ORI\n");
-            break;
-
-            case 0x38000000: //XORI
-            printf("XORI\n");
-            break;
-
-            case 0x28000000: //SLTI
-            printf("SLTI\n");
-            break;
-
-            case 0xA4000000: //SH
-            printf("SH\n");
-            break;
-
-            case 0xA0000000: //SB
-            printf("SB\n");
-            break;
-
-            case 0x0C000000: //JAL 
-            printf("JAL\n");
-            break;
-
-            case 0x08000000: //J
-            printf("J\n");
-            break;
-
-            case 0x80000000: //LB
-            printf("LB\n");
+            base = instruction & 0x03E00000;
+            base = base >> 21;
+            immediate = instruction & 0x0000FFFF;
+            if((immediate & 0x00008000) == 0x00008000){
+                immediate = immediate | 0xFFFF0000;
+            }
+            else{
+                immediate = immediate & 0x0000FFFF;
+            }
+            rt = instruction & 0x001F0000;
+            rt = rt >> 16;
+            mem_location = CURRENT_STATE.REGS[base] + immediate;
+            mem_location = mem_location | 0x00010000;
+            printf("LW: $%u = MEM[%x]\n",rt, mem_location);
             break;
 
             case 0x84000000: //LH
-            printf("LH\n");
+            base = instruction & 0x03E00000;
+            base = base >> 21;
+            immediate = instruction & 0x0000FFFF;
+            if((immediate & 0x00008000) == 0x00008000){
+                immediate = immediate | 0xFFFF0000;
+            }
+            else{
+                immediate = immediate & 0x0000FFFF;
+            }
+            rt = instruction & 0x001F0000;
+            rt = rt >> 16;
+            mem_location = CURRENT_STATE.REGS[base] + immediate;
+            mem_location = mem_location | 0x00010000;
+            printf("LH: $%u = MEM[%x]\n", rt, mem_location);
+            break;
+
+            case 0xAC000000: //SW
+            base = instruction & 0x03E00000;
+			base = base >> 21;
+			rt = instruction & 0x001F0000;
+			rt = rt >> 16;
+			immediate = instruction & 0x0000FFFF;
+            if((immediate & 0x00008000) == 0x00008000){
+                immediate = immediate | 0xFFFF0000;
+            }
+            else{
+                immediate = immediate & 0x0000FFFF;
+            }
+			mem_location = CURRENT_STATE.REGS[base] + immediate;
+            mem_location = mem_location | 0x00010000;
+			printf("SW: MEM[%x] = $%u\n", mem_location, rt);
+			break;
+
+            case 0x30000000: //ANDI
+            immediate = instruction & 0x0000FFFF;
+            rs = instruction & 0x03E00000;
+            rs = rs >> 21;
+            rt = instruction & 0x001F0000;
+			rt = rt >> 16;
+            printf("ANDI: $%u = $%u & %u\n", rt, rs, immediate);
+            break;
+
+            case 0x34000000: //ORI
+            immediate = instruction & 0x0000FFFF;
+            rs = instruction & 0x03E00000;
+            rs = rs >> 21;
+            rt = instruction & 0x001F0000;
+			rt = rt >> 16;
+            printf("ORI: $%u = $%u | %u\n", rt, rs, immediate);
+            break;
+
+            case 0x38000000: //XORI
+            immediate = instruction & 0x0000FFFF;
+            rs = instruction & 0x03E00000;
+            rs = rs >> 21;
+            rt = instruction & 0x001F0000;
+			rt = rt >> 16;
+            printf("XORI: $%u = $%u ^ %u\n", rt, rs, immediate);
+            break;
+
+            case 0x28000000: //SLTI
+            immediate = instruction & 0x0000FFFF;
+            if((immediate & 0x00008000) == 0x00008000){
+                immediate = immediate | 0xFFFF0000;
+            }
+            else{
+                immediate = immediate & 0x0000FFFF;
+            }
+            rs = instruction & 0x03E00000;
+            rs = rs >> 21;
+            rt = instruction & 0x001F0000;
+			rt = rt >> 16;
+            printf("SLTI: if($%u < %u) $%u = 0x01 if($%u >= %u) $%u = 0x00\n", rs, immediate, rt, rs, immediate, rt);
+            break;
+
+            case 0xA4000000: //SH
+            base = instruction & 0x03E00000;
+			base = base >> 21;
+			rt = instruction & 0x001F0000;
+			rt = rt >> 16;
+			immediate = instruction & 0x0000FFFF;
+            if((immediate & 0x00008000) == 0x00008000){
+                immediate = immediate | 0xFFFF0000;
+            }
+            else{
+                immediate = immediate & 0x0000FFFF;
+            }
+			mem_location = CURRENT_STATE.REGS[base] + immediate;
+            mem_location = mem_location | 0x00010000;
+            printf("SH: MEM[%x] = $%u\n", mem_location, rt);
+            break;
+
+            case 0xA0000000: //SB
+            base = instruction & 0x03E00000;
+			base = base >> 21;
+			rt = instruction & 0x001F0000;
+			rt = rt >> 16;
+			immediate = instruction & 0x0000FFFF;
+            if((immediate & 0x00008000) == 0x00008000){
+                immediate = immediate | 0xFFFF0000;
+            }
+            else{
+                immediate = immediate & 0x0000FFFF;
+            }
+			mem_location = CURRENT_STATE.REGS[base] + immediate;
+            mem_location = mem_location | 0x00010000;
+            printf("SB: MEM[%x] = $%u\n", mem_location, rt);
+            break;
+
+            case 0x0C000000: //JAL
+            target = instruction & 0x03FFFFFF;
+            target = target << 2; 
+            printf("JAL: %u\n", target);
+            break;
+
+            case 0x08000000: //J
+            target = instruction & 0x03FFFFFF;
+            target = target << 2;
+            printf("J: %u\n", target);
+            break;
+
+            case 0x80000000: //LB
+            base = instruction & 0x03E00000;
+            base = base >> 21;
+            immediate = instruction & 0x0000FFFF;
+            if((immediate & 0x00008000) == 0x00008000){
+                immediate = immediate | 0xFFFF0000;
+            }
+            else{
+                immediate = immediate & 0x0000FFFF;
+            }
+            rt = instruction & 0x001F0000;
+            rt = rt >> 16;
+            mem_location = CURRENT_STATE.REGS[base] + immediate;
+            mem_location = mem_location | 0x00010000;
+            printf("LB: $%u = MEM[%x]\n", rt, mem_location);
             break;
 
             case 0x10000000: //BEQ
-            printf("BEQ\n");
+            target = instruction & 0x0000FFFF;
+            target = target << 2;
+            rs = instruction & 0x03E00000;
+            rs = rs >> 21;
+            rt = instruction & 0x001F0000;
+			rt = rt >> 16;
+            if((target & 0x00008000) == 0x00008000){
+                target = target | 0xFFFF0000;
+            }
+            else{
+                target = target & 0x0000FFFF;
+            }
+            printf("BEQ: if($%u = $%u) PC = PC + %u\n", rs, rt, target);
             break;
 
             case 0x14000000: //BNE
-            printf("BNE\n");
+            target = instruction & 0x0000FFFF;
+            target = target << 2;
+            rs = instruction & 0x03E00000;
+            rs = rs >> 21;
+            rt = instruction & 0x001F0000;
+			rt = rt >> 16;
+            if((target & 0x00008000) == 0x00008000){
+                target = target | 0xFFFF0000;
+            }
+            else{
+                target = target & 0x0000FFFF;
+            }
+            printf("BNE: if($%u != $%u) PC = PC + %u\n", rs, rt, target);
             break; 
 
             case 0x18000000: //BLEZ
-            printf("BLEZ\n");
+            target = instruction & 0x0000FFFF;
+            target = target << 2;
+            rs = instruction & 0x03E00000;
+            rs = rs >> 21;
+            if((target & 0x00008000) == 0x00008000){
+                target = target | 0xFFFF0000;
+            }
+            else{
+                target = target & 0x0000FFFF;
+            }
+            printf("BLEZ: if($%u <= 0) PC + %u\n", rs, target);
             break;
 
             case 0x1C000000: //BGTZ
-            printf("BGTZ\n");
+            target = instruction & 0x0000FFFF;
+            target = target << 2;
+            rs = instruction & 0x03E00000;
+            rs = rs >> 21;
+            if((target & 0x00008000) == 0x00008000){
+                target = target | 0xFFFF0000;
+            }
+            else{
+                target = target & 0x0000FFFF;
+            }
+            printf("BGTZ: if($%u > 0) PC + %u\n", rs, target);
             break; 
 
             case 0x04000000: //BLTZ, BGEZ
             rt = instruction & 0x001F0000;
 			rt = rt >> 16;
+            target = instruction & 0x0000FFFF;
+            target = target << 2;
+            rs = instruction & 0x03E00000;
+            rs = rs >> 21;
+            if((target & 0x00008000) == 0x00008000){
+                target = target | 0xFFFF0000;
+            }
+            else{
+                target = target & 0x0000FFFF;
+            }
             if(rt == 0x01){ //BGEZ
-                printf("BGEZ\n");
+                printf("BGEZ: if($%u >= 0) PC + %u\n", rs, target);
             }
             else{ //BLTZ
-                printf("BLTZ\n");
+                printf("BLTZ: if($%u < 0) PC + %u\n", rs, target);
             }
             break; 
         }
