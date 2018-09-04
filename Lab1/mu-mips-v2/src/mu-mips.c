@@ -565,6 +565,112 @@ void handle_instruction()
             NEXT_STATE.REGS[2] = 0x0A;
             break;
                 
+            case 0x10000000: //BEQ
+            immediate = instruction & 0x0000FFFF;
+            rt = instruction & 0x001F0000;
+            rt = rt >> 16;
+            rs = instruction & 0x03E00000;
+            rs = rs >> 21;
+            immediate = immediate << 2;
+            if((immediate & 0x00008000) == 0x00008000)
+            {
+                immediate = immediate | 0xFFFF0000;
+            }
+            else
+            {
+                immediate = immediate & 0x0000FFFF;
+            }
+            if(CURRENT_STATE.REGS[rs] == CURRENT_STATE.REGS[rt])
+            {
+                NEXT_STATE.PC = CURRENT_STATE.PC + immediate;
+            }
+            printf("BEQ, %x\n\n",NEXT_STATE.PC);
+            NEXT_STATE.REGS[2] = 0x0A;
+            break;
+
+            case 0x14000000: //BNE
+            immediate = instruction & 0x0000FFFF;
+            rt = instruction & 0x001F0000;
+            rt = rt >> 16;
+            rs = instruction & 0x03E00000;
+            rs = rs >> 21;
+            immediate = immediate << 2;
+            if((immediate & 0x00008000) == 0x00008000)
+            {
+                immediate = immediate | 0xFFFF0000;
+            }
+            else
+            {
+                immediate = immediate & 0x0000FFFF;
+            }
+            if(CURRENT_STATE.REGS[rs] != CURRENT_STATE.REGS[rt])
+            {
+                NEXT_STATE.PC = CURRENT_STATE.PC + immediate;
+            }
+            printf("BNE, %x\n\n",NEXT_STATE.PC);
+            NEXT_STATE.REGS[2] = 0x0A;
+            break;
+
+            case 0x18000000: //BLEZ
+            immediate = instruction & 0x0000FFFF;
+            rs = instruction & 0x03E00000;
+            rs = rs >> 21;
+            immediate = immediate << 2;
+            if((immediate & 0x00008000) == 0x00008000)
+            {
+                immediate = immediate | 0xFFFF0000;
+            }
+            else
+            {
+                immediate = immediate & 0x0000FFFF;
+            }
+            if((CURRENT_STATE.REGS[rs] & 0x80000000 == 0x80000000) || (CURRENT_STATE.REGS[rs] == 0x00))
+            {
+                NEXT_STATE.PC = CURRENT_STATE.PC + immediate;
+            }
+            printf("BLEZ, %x\n\n",NEXT_STATE.PC);
+            NEXT_STATE.REGS[2] = 0x0A;
+            break;
+
+            case 0x1C000000: //BGTZ
+            immediate = instruction & 0x0000FFFF;
+            rs = instruction & 0x03E00000;
+            rs = rs >> 21;
+            immediate = immediate << 2;
+            if((immediate & 0x00008000) == 0x00008000)
+            {
+                immediate = immediate | 0xFFFF0000;
+            }
+            else
+            {
+                immediate = immediate & 0x0000FFFF;
+            }
+            if((CURRENT_STATE.REGS[rs] | 0xDFFFFFFF == 0xDFFFFFFF) || (CURRENT_STATE.REGS[rs] != 0x00))
+            {
+                NEXT_STATE.PC = CURRENT_STATE.PC + immediate;
+            }
+            printf("BGTZ, %x\n\n",NEXT_STATE.PC);
+            NEXT_STATE.REGS[2] = 0x0A;
+            break;
+
+            case 0x04000000: //BLTZ, BGEZ
+            immediate = instruction & 0x0000FFFF;
+            rs = instruction & 0x03E00000;
+            rs = rs >> 21;
+            immediate = immediate << 2;
+            if(CURRENT_STATE.REGS[rs] & 0x80000000 == 0x80000000)
+            {
+                NEXT_STATE.PC = CURRENT_STATE.PC + immediate;
+                printf("BLTZ, %x\n\n",NEXT_STATE.PC);
+            }
+            else if(CURRENT_STATE.REGS[rs] | 0xDFFFFFFF == 0xDFFFFFFF)
+            {
+                NEXT_STATE.PC = CURRENT_STATE.PC + immediate;
+                printf("BGEZ, %x\n\n",NEXT_STATE.PC);
+            }
+            NEXT_STATE.REGS[2] = 0x0A;
+            break;
+
             case 0x8C000000: //LW
             base = instruction & 0x03E00000;
             base = base >> 21;
