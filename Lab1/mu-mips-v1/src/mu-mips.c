@@ -880,7 +880,7 @@ void handle_instruction()
                 target = target & 0x0000FFFF;
             }
             if(rt == 0x01){ //BGEZ
-                if((CURRENT_STATE.REGS[rs] == 0x00) && ((CURRENT_STATE.REGS[rs] & 0x80000000) != 0x80000000)){
+                if((CURRENT_STATE.REGS[rs] == 0x00) || ((CURRENT_STATE.REGS[rs] & 0x80000000) != 0x80000000)){
                     NEXT_STATE.PC = CURRENT_STATE.PC + target;
                 }
             }
@@ -930,52 +930,119 @@ void print_instruction(uint32_t addr){
     uint32_t instruction = mem_read_32(addr);
     uint32_t Op_Code_Special = 0;
     uint32_t op = 0;
+    uint32_t rs = 0;
+    uint32_t rt = 0;
+    uint32_t rd = 0;
+    // uint32_t sa = 0;
+    // uint32_t immediate = 0;
+    // uint32_t base = 0;
+    // uint32_t mem_location = 0;
+    // uint32_t temp = 0;
+    // uint32_t target = 0;
     if((instruction | 0x03ffffff) == 0x03ffffff){
         Op_Code_Special = instruction & 0x0000003f;
         
         switch(Op_Code_Special){
             case 0x00000020: //ADD
-            printf("ADD\n");
+            rs = instruction & 0x03E00000;
+            rs = rs >> 21;
+            rt = instruction & 0x001F0000;
+            rt = rt >> 16;
+            rd = instruction & 0x0000F800;
+            rd = rd >> 11;
+            printf("ADD: $%u = $%u + $%u\n",rd, rs, rt);
             break;
 
             case 0x00000021: //ADDU
-            printf("ADDU\n");
+            rs = instruction & 0x03E00000;
+            rs = rs >> 21;
+            rt = instruction & 0x001F0000;
+            rt = rt >> 16;
+            rd = instruction & 0x0000F800;
+            rd = rd >> 11;
+            printf("ADDU: $%u = $%u + $%u\n",rd, rs, rt);
             break;
 
             case 0x00000022: //SUB
-			printf("SUB\n");
+            rs = instruction & 0x03E00000;
+			rs = rs >> 21;
+			rt = instruction & 0x001F0000;
+			rt = rt >> 16;
+			rd = instruction & 0x0000F800;
+			rd = rd >> 11;
+			printf("SUB: $%u = $%u - $%u\n", rd, rs, rt);
 			break;
 
             case 0x00000023: //SUBU
-            printf("SUBU\n");
+            rs = instruction & 0x03E00000;
+			rs = rs >> 21;
+			rt = instruction & 0x001F0000;
+			rt = rt >> 16;
+			rd = instruction & 0x0000F800;
+			rd = rd >> 11;
+			printf("SUBU: $%u = $%u - $%u\n", rd, rs, rt);
             break;
 
 			case 0x00000018: //MULT
-			printf("MULT\n");
+            rs = instruction & 0x03E00000;
+			rs = rs >> 21;
+			rt = instruction & 0x001F0000;
+			rt = rt >> 16;
+			printf("MULT: $%u * $%u\n", rs, rt);
 			break;
 
             case 0x00000019: //MULT
-            printf("MULTU\n");
+            rs = instruction & 0x03E00000;
+			rs = rs >> 21;
+			rt = instruction & 0x001F0000;
+			rt = rt >> 16;
+            printf("MULTU: $%u * $%u\n", rs, rt);
             break;
 
             case 0x0000001A: //DIV
-			printf("DIV\n");
+            rs = instruction & 0x03E00000;
+			rs = rs >> 21;
+			rt = instruction & 0x001F0000;
+			rt = rt >> 16;
+			printf("DIV: $%u / $%u\n");
             break;
 
             case 0x00000001B: //DIVU
-            printf("DIVU\n");
+            rs = instruction & 0x03E00000;
+			rs = rs >> 21;
+			rt = instruction & 0x001F0000;
+			rt = rt >> 16;
+			printf("DIVU: $%u / $%u\n", rs, rt);
             break;
 
 			case 0x00000024: //AND
-			printf("AND\n");
+            rs = instruction & 0x03E00000;
+			rs = rs >> 21;
+			rt = instruction & 0x001F0000;
+			rt = rt >> 16;
+			rd = instruction & 0x0000F800;
+			rd = rd >> 11;
+			printf("AND: $%u = $%u & $%u\n", rd, rs, rt);
 			break;
 
 			case 0x00000025: //OR
-			printf("OR\n");
+            rs = instruction & 0x03E00000;
+			rs = rs >> 21;
+			rt = instruction & 0x001F0000;
+			rt = rt >> 16;
+			rd = instruction & 0x0000F800;
+			rd = rd >> 11;
+			printf("OR: $%u = $%u | $%u\n", rd, rs, rt);
 			break;
 
 			case 0x00000026: //XOR
-			printf("XOR\n");
+			rs = instruction & 0x03E00000;
+			rs = rs >> 21;
+			rt = instruction & 0x001F0000;
+			rt = rt >> 16;
+			rd = instruction & 0x0000F800;
+			rd = rd >> 11;
+			printf("XOR: $%u = $%u ^ $%u\n", rd, rs, rt);
 			break;
 
 			case 0x00000027: //NOR
